@@ -1,0 +1,675 @@
+{% load static %}
+
+<!DOCTYPE html>
+
+<html
+    lang="{% if request.LANGUAGE_CODE == 'fa' %}fa{% else %}en{% endif %}"
+    dir="{% if request.LANGUAGE_CODE == 'fa' %}rtl{% else %}ltr{% endif %}"
+>
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        {% if restaurant %}
+            {{ restaurant.name }}
+        {% else %}
+            {% if request.LANGUAGE_CODE == 'fa' %}
+                رستوران پیتزا
+            {% else %}
+                Pizza Restaurant
+            {% endif %}
+        {% endif %}
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="{% static 'css/style.css' %}"
+    >
+
+</head>
+
+
+<body>
+
+
+<!-- =====================================================
+     NAVBAR
+===================================================== -->
+
+<header class="navbar">
+
+    <div class="logo">
+
+        {% if restaurant %}
+            {{ restaurant.name }}
+        {% else %}
+            PIZZA
+        {% endif %}
+
+    </div>
+
+
+    <nav>
+
+        <a href="#home">
+
+            {% if request.LANGUAGE_CODE == 'fa' %}
+                خانه
+            {% else %}
+                Home
+            {% endif %}
+
+        </a>
+
+
+        <a href="#menu">
+
+            {% if request.LANGUAGE_CODE == 'fa' %}
+                منو
+            {% else %}
+                Menu
+            {% endif %}
+
+        </a>
+
+
+        <a href="#about">
+
+            {% if request.LANGUAGE_CODE == 'fa' %}
+                درباره ما
+            {% else %}
+                About Us
+            {% endif %}
+
+        </a>
+
+
+        <a href="#contact">
+
+            {% if request.LANGUAGE_CODE == 'fa' %}
+                تماس
+            {% else %}
+                Contact
+            {% endif %}
+
+        </a>
+
+    </nav>
+
+
+    <!-- LANGUAGE BUTTON -->
+
+    <form
+        action="{% url 'set_language' %}"
+        method="post"
+        class="language-form"
+    >
+
+        {% csrf_token %}
+
+        <input
+            type="hidden"
+            name="next"
+            value="{{ request.get_full_path }}"
+        >
+
+
+        {% if request.LANGUAGE_CODE == 'fa' %}
+
+            <input
+                type="hidden"
+                name="language"
+                value="en"
+            >
+
+            <button
+                type="submit"
+                class="language-button"
+            >
+                🇬🇧 English
+            </button>
+
+        {% else %}
+
+            <input
+                type="hidden"
+                name="language"
+                value="fa"
+            >
+
+            <button
+                type="submit"
+                class="language-button"
+            >
+                🇮🇷 فارسی
+            </button>
+
+        {% endif %}
+
+    </form>
+
+</header>
+
+
+
+<!-- =====================================================
+     HERO
+===================================================== -->
+
+<section
+    id="home"
+    class="hero"
+
+    {% if restaurant and restaurant.hero_image %}
+
+        style="
+            background-image:
+            url('{{ restaurant.hero_image.url }}');
+        "
+
+    {% endif %}
+>
+
+    <div class="hero-overlay">
+
+        <div class="hero-content">
+
+
+            <span class="small-title">
+
+                {% if request.LANGUAGE_CODE == 'fa' %}
+                    تازه • داغ • خوشمزه
+                {% else %}
+                    FRESH • HOT • DELICIOUS
+                {% endif %}
+
+            </span>
+
+
+            <h1>
+
+                {% if restaurant %}
+
+                    {{ restaurant.hero_title }}
+
+                {% else %}
+
+                    {% if request.LANGUAGE_CODE == 'fa' %}
+                        بهترین طعم پیتزا
+                    {% else %}
+                        The Best Pizza Taste
+                    {% endif %}
+
+                {% endif %}
+
+            </h1>
+
+
+            <p>
+
+                {% if restaurant %}
+
+                    {{ restaurant.hero_subtitle }}
+
+                {% else %}
+
+                    {% if request.LANGUAGE_CODE == 'fa' %}
+                        پیتزای تازه با بهترین مواد اولیه
+                    {% else %}
+                        Fresh pizza made with the best ingredients
+                    {% endif %}
+
+                {% endif %}
+
+            </p>
+
+
+            <a
+                href="#menu"
+                class="hero-button"
+            >
+
+                {% if request.LANGUAGE_CODE == 'fa' %}
+                    مشاهده منو
+                {% else %}
+                    View Menu
+                {% endif %}
+
+            </a>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<!-- =====================================================
+     INTRO
+===================================================== -->
+
+<section class="intro">
+
+    <span>
+
+        {% if request.LANGUAGE_CODE == 'fa' %}
+            منوی ما
+        {% else %}
+            OUR MENU
+        {% endif %}
+
+    </span>
+
+
+    <h2>
+
+        {% if request.LANGUAGE_CODE == 'fa' %}
+            یک انتخاب خوشمزه
+        {% else %}
+            A Delicious Choice
+        {% endif %}
+
+    </h2>
+
+
+    <p>
+
+        {% if request.LANGUAGE_CODE == 'fa' %}
+            هر چیزی که دوست داری، اینجاست.
+        {% else %}
+            Everything you love is here.
+        {% endif %}
+
+    </p>
+
+</section>
+
+
+
+<!-- =====================================================
+     CATEGORIES
+===================================================== -->
+
+<section class="categories">
+
+
+    <!-- ALL -->
+
+    <button
+        type="button"
+        class="category-button active"
+        onclick="filterProducts('all', this)"
+    >
+
+        {% if request.LANGUAGE_CODE == 'fa' %}
+            همه
+        {% else %}
+            All
+        {% endif %}
+
+    </button>
+
+
+    <!-- DATABASE CATEGORIES -->
+
+    {% for category in categories %}
+
+        <button
+            type="button"
+            class="category-button"
+            onclick="filterProducts('{{ category.id }}', this)"
+        >
+
+            {{ category.name }}
+
+        </button>
+
+    {% endfor %}
+
+</section>
+
+
+
+<!-- =====================================================
+     MENU
+===================================================== -->
+
+<section
+    id="menu"
+    class="menu-container"
+>
+
+
+    {% for product in products %}
+
+        <article
+            class="product-card"
+            data-category="{{ product.category.id|stringformat:'s' }}"
+        >
+
+
+            <!-- IMAGE -->
+
+            <div class="product-image">
+
+                {% if product.image %}
+
+                    <img
+                        src="{{ product.image.url }}"
+                        alt="{{ product.name }}"
+                    >
+
+                {% else %}
+
+                    <div class="no-image">
+                        🍕
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+
+            <!-- PRODUCT INFO -->
+
+            <div class="product-info">
+
+
+                <div class="product-header">
+
+
+                    <h3>
+                        {{ product.name }}
+                    </h3>
+
+
+                    <span class="price">
+
+                        {{ product.price|floatformat:0 }}
+
+                        {% if request.LANGUAGE_CODE == 'fa' %}
+                            تومان
+                        {% else %}
+                            Toman
+                        {% endif %}
+
+                    </span>
+
+
+                </div>
+
+
+                <p>
+
+                    {{ product.description }}
+
+                </p>
+
+
+            </div>
+
+
+        </article>
+
+
+    {% empty %}
+
+
+        <div class="empty">
+
+            {% if request.LANGUAGE_CODE == 'fa' %}
+                هنوز غذایی اضافه نشده است.
+            {% else %}
+                No food has been added yet.
+            {% endif %}
+
+        </div>
+
+
+    {% endfor %}
+
+
+</section>
+
+
+
+<!-- =====================================================
+     ABOUT
+===================================================== -->
+
+<section
+    id="about"
+    class="about"
+>
+
+    <div>
+
+
+        <span>
+
+            {% if request.LANGUAGE_CODE == 'fa' %}
+                درباره ما
+            {% else %}
+                ABOUT US
+            {% endif %}
+
+        </span>
+
+
+        <h2>
+
+
+            {% if restaurant %}
+
+                {{ restaurant.name }}
+
+            {% else %}
+
+                {% if request.LANGUAGE_CODE == 'fa' %}
+                    درباره رستوران
+                {% else %}
+                    About Our Restaurant
+                {% endif %}
+
+            {% endif %}
+
+
+        </h2>
+
+
+        <p>
+
+
+            {% if restaurant %}
+
+                {{ restaurant.description }}
+
+            {% else %}
+
+                {% if request.LANGUAGE_CODE == 'fa' %}
+
+                    ما با استفاده از مواد اولیه تازه،
+                    بهترین پیتزاها را برای شما آماده می‌کنیم.
+
+                {% else %}
+
+                    We use fresh ingredients
+                    to prepare the best pizzas for you.
+
+                {% endif %}
+
+            {% endif %}
+
+
+        </p>
+
+
+    </div>
+
+</section>
+
+
+
+<!-- =====================================================
+     FOOTER
+===================================================== -->
+
+<footer id="contact">
+
+
+    <h2>
+
+
+        {% if restaurant %}
+
+            {{ restaurant.name }}
+
+        {% else %}
+
+            {% if request.LANGUAGE_CODE == 'fa' %}
+                رستوران پیتزا
+            {% else %}
+                Pizza Restaurant
+            {% endif %}
+
+        {% endif %}
+
+
+    </h2>
+
+
+    {% if restaurant %}
+
+
+        {% if restaurant.address %}
+
+            <p>
+                {{ restaurant.address }}
+            </p>
+
+        {% endif %}
+
+
+        {% if restaurant.phone %}
+
+            <p>
+                {{ restaurant.phone }}
+            </p>
+
+        {% endif %}
+
+
+    {% endif %}
+
+
+    <div class="footer-bottom">
+
+        © 2026
+
+        {% if request.LANGUAGE_CODE == 'fa' %}
+            تمامی حقوق محفوظ است
+        {% else %}
+            All Rights Reserved
+        {% endif %}
+
+    </div>
+
+
+</footer>
+
+
+
+<!-- =====================================================
+     CATEGORY FILTER
+===================================================== -->
+
+<script>
+
+function filterProducts(categoryId, button) {
+
+    // تمام کارت‌های غذا
+    const products = document.querySelectorAll(".product-card");
+
+    // تمام دکمه‌های دسته‌بندی
+    const buttons = document.querySelectorAll(".category-button");
+
+
+    // حذف active از همه دکمه‌ها
+
+    buttons.forEach(function(btn) {
+
+        btn.classList.remove("active");
+
+    });
+
+
+    // فعال کردن دکمه انتخاب شده
+
+    button.classList.add("active");
+
+
+    // تبدیل ID انتخاب شده به string
+
+    const selectedCategory = String(categoryId).trim();
+
+
+    // بررسی تمام غذاها
+
+    products.forEach(function(product) {
+
+
+        // گرفتن category ID غذا
+
+        const productCategory =
+            String(
+                product.getAttribute("data-category")
+            ).trim();
+
+
+        // اگر All انتخاب شده
+
+        if (selectedCategory === "all") {
+
+            product.style.display = "";
+
+
+        }
+
+        // اگر دسته‌بندی غذا همان دسته انتخاب شده است
+
+        else if (
+            productCategory === selectedCategory
+        ) {
+
+            product.style.display = "";
+
+
+        }
+
+        // در غیر این صورت مخفی کن
+
+        else {
+
+            product.style.display = "none";
+
+        }
+
+
+    });
+
+}
+
+</script>
+
+
+</body>
+
+</html>
